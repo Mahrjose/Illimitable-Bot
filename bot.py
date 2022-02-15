@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 
 from dotenv import load_dotenv
-import ping
+import server
 
 
 class CustomBotClient(commands.Bot):
@@ -16,6 +16,7 @@ class CustomBotClient(commands.Bot):
     def load_cogs(self):
         for filename in os.listdir("cogs"):
 
+            # Loop through the "cog" directory and load all the cogs
             if filename.endswith(".py"):
                 extension = f"cogs.{filename[:-3]}"
                 self.load_extension(extension)
@@ -30,7 +31,7 @@ class CustomBotClient(commands.Bot):
 
 def main():
     bot = CustomBotClient(command_prefix="-")
-    ping.alive()
+    server.alive()
 
     load_dotenv()
     bot.run(os.getenv("TOKEN"))
