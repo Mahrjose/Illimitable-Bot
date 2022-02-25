@@ -9,8 +9,11 @@ import calendar
 class AnimeNews(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self._last_updated_time = 0
         self._channel_id = 943212972308832256  # Need to remove this (hardcoded)
+
+        with open("updatedTime.txt") as file:
+            self._last_updated_time = int(file.readline())
+
         self.anime_news.start()
 
     @staticmethod
@@ -34,9 +37,9 @@ class AnimeNews(commands.Cog):
 
         self._channel = self.bot.get_channel(self._channel_id)
 
-        # For every newsList from a specific RSS feed from all the entries
+        # For every newsList(:array) from a specific RSS feed from all the entries
         for entries in all_entries:
-            # For every news in the newsList
+            # For every news in the newsList(:array)
             for entry in entries:
 
                 # Convert published_parsed from time.struct_time to seconds from epoch
@@ -46,6 +49,11 @@ class AnimeNews(commands.Cog):
                 # update to latest time, post the news
                 if entry_time > self._last_updated_time:
                     self._last_updated_time = entry_time
+                    # Saves the updated time in the updateTime.txt
+                    # Now even if the bot stop suddenly and restarts
+                    # last updated time won't be lost
+                    with open("updatedTime.txt", "w") as file:
+                        file.write(str(self._last_updated_time))
 
                     # If the feed is from MyAnimeList.net
                     if "myanimelist.net" in entry.id:
