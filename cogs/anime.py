@@ -4,6 +4,8 @@ from discord.ext import commands, tasks
 import feedparser
 import html
 import calendar
+import requests
+from bs4 import BeautifulSoup
 
 
 class AnimeNews(commands.Cog):
@@ -17,7 +19,14 @@ class AnimeNews(commands.Cog):
         self.anime_news.start()
 
     @staticmethod
-    def __get_anime_entries():
+    def __get_metaImage(url) -> str:
+        html_contents = requests.get(url).text
+        soup = BeautifulSoup(html_contents, features="html.parser")
+        image = soup.find("meta", attrs={"property": "og:image"})
+        return image["content"] if image is not None else None
+
+    @staticmethod
+    def __get_anime_entries() -> list:
 
         # all the RSS feeds you need
         urls = (
@@ -76,6 +85,9 @@ class AnimeNews(commands.Cog):
 
                     # If the feed is from Anime News Network
                     if "animenewsnetwork.com" in entry.id:
+
+                        image_link = AnimeNews.__get_metaImage(entry.id)
+
                         message = discord.Embed(
                             color=discord.Color.blue(),
                             title=entry.title,
@@ -86,6 +98,10 @@ class AnimeNews(commands.Cog):
                             text="From Anime News Network",
                             icon_url="https://i.imgur.com/0Kus4ME.png",
                         )
+                        if image_link is not None:
+                            message.set_image(url=image_link)
+                        else:
+                            pass
 
                     await self._channel.send(embed=message)
 
