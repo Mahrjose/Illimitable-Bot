@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import server
 
 
-class CustomBotClient(commands.Bot):
+class IllimitableBot(commands.Bot):
     def __init__(self, command_prefix, **options):
         super().__init__(command_prefix, **options)
         self.load_cogs()
@@ -30,7 +30,7 @@ class CustomBotClient(commands.Bot):
 
 
 def main():
-    bot = CustomBotClient(command_prefix="-")
+    bot = IllimitableBot(command_prefix=".")
     server.alive()
 
     load_dotenv()
