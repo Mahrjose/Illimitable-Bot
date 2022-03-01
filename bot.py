@@ -51,7 +51,7 @@ def main():
     logger.debug("Starting Illimitable-Bot.....")
     bot = IllimitableBot(command_prefix=".")
     logger.debug("--------------------------------------------")
-    # server.alive()
+    server.alive()
 
     load_dotenv()
     bot.run(os.getenv("TOKEN"))
