@@ -1,8 +1,17 @@
 import wikipediaapi as wikiapi
 import wikipedia as wiki
+import requests
+from bs4 import BeautifulSoup
 
 import discord
 from discord.ext import commands
+
+
+def get_metaImage(url) -> str:
+    html_contents = requests.get(url).text
+    soup = BeautifulSoup(html_contents, features="html.parser")
+    image = soup.find("meta", attrs={"property": "og:image"})
+    return image["content"] if image is not None else None
 
 
 class Search(commands.Cog):
@@ -43,7 +52,11 @@ class Search(commands.Cog):
             )
 
             # image_link = wiki.page(str(page.fullurl)[31:-1]).images[0]
-            self._embed.set_thumbnail(url="https://i.imgur.com/IcBvA0p.png")
+            image_url = get_metaImage(page.fullurl)
+            if image_url is not None:
+                self._embed.set_thumbnail(url=image_url)
+            else:
+                self._embed.set_thumbnail(url="https://i.imgur.com/IcBvA0p.png")
             self._embed.add_field(
                 name="\u200B",
                 value=f"For more information [click here]({page.fullurl})",
