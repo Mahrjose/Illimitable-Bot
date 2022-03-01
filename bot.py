@@ -34,6 +34,10 @@ class IllimitableBot(commands.Bot):
                 logger.debug(f"Extension {extension} Loaded Successfully")
                 print(f"Extension {extension} Loaded Successfully.")
 
+    async def on_message(self, message):
+        if message.channel.type == discord.ChannelType.news:
+            await message.publish()
+
     async def on_ready(self):
         await self.change_presence(
             status=discord.Status.online, activity=discord.Game("Game of Life")
