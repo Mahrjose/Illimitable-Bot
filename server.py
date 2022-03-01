@@ -15,3 +15,4 @@ def run():
 
 def alive():
     t = Thread(target=run)
+    t.start()
