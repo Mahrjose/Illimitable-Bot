@@ -37,6 +37,7 @@ class IllimitableBot(commands.Bot):
     async def on_message(self, message):
         if message.channel.type == discord.ChannelType.news:
             await message.publish()
+            await self.process_commands(message)
 
     async def on_ready(self):
         await self.change_presence(
