@@ -1,0 +1,11 @@
+logger
+black
+py-cord
+python-dotenv
+flask
+feedparser
+requests
+bs4
+Wikipedia
+wikipedia
+wikipedia-api
