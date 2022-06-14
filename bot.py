@@ -13,7 +13,9 @@ logger = logging.getLogger(__name__)
 
 def setup_logger() -> None:
     logger.setLevel(logging.DEBUG)
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s", "%Y-%m-%d %I:%M:%S %p %Z")
+    formatter = logging.Formatter(
+        "%(asctime)s - %(levelname)s - %(message)s", "%Y-%m-%d %I:%M:%S %p %Z"
+    )
     file_handler = logging.FileHandler("Logs/Bot.log")
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
@@ -52,8 +54,10 @@ def main():
     bot = IllimitableBot(command_prefix=".")
     server.alive()
 
-    load_dotenv()
-    bot.run(os.getenv("TOKEN"))
+    # load_dotenv()
+    # bot.run(os.getenv("TOKEN"))
+    token = os.environ.get("TOKEN")
+    bot.run(token)
 
 
 if __name__ == "__main__":
