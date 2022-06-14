@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def setup_logger() -> None:
     logger.setLevel(logging.DEBUG)
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s", "%Y-%m-%d %I:%M:%S %p %Z")
     file_handler = logging.FileHandler("Logs/Bot.log")
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
@@ -31,7 +31,6 @@ class IllimitableBot(commands.Bot):
             if filename.endswith(".py"):
                 extension = f"cogs.{filename[:-3]}"
                 self.load_extension(extension)
-                logger.debug(f"Extension {extension} Loaded Successfully")
                 print(f"Extension {extension} Loaded Successfully.")
 
     async def on_message(self, message):
@@ -44,15 +43,13 @@ class IllimitableBot(commands.Bot):
         await self.change_presence(
             status=discord.Status.online, activity=discord.Game("Game of Life")
         )
-        logger.debug(f"Bot {self.user} is connected to Discord and ready to roll!")
         print(f"Bot {self.user} is connected to Discord and ready to roll!")
 
 
 def main():
     setup_logger()
-    logger.debug("Starting Illimitable-Bot.....")
+    logger.debug("Illimitable Bot (Re)Started")
     bot = IllimitableBot(command_prefix=".")
-    logger.debug("--------------------------------------------")
     server.alive()
 
     load_dotenv()
