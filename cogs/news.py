@@ -34,7 +34,7 @@ def scrape_metaImage(url) -> str:
 class AnimeNews(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self._channel_id = 943212972308832256  # Need to remove this (hardcoded)
+        self._channel_id = 943462482654167050  # Need to remove this (hardcoded)
         self._last_updated_time = read_NewsTime("AnimeNews")
         self.anime_news.start()
 
@@ -142,7 +142,7 @@ class AnimeNews(commands.Cog):
 class TechNews(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self._channel_id = 947191180268015756
+        self._channel_id = 947192590095241278
         self._last_updated_time = read_NewsTime("TechNews")
         self.tech_news.start()
 
@@ -152,7 +152,7 @@ class TechNews(commands.Cog):
         # RSS feeds
         urls: tuple = (
             # "https://www.reddit.com/user/mahrjose/m/tech_news/top/.rss?t=today&limit=25", # TechNews Custom Feed
-            "https://www.reddit.com/r/gamernews/top.rss?t=today&limit=25",  # r/gamernews
+            # "https://www.reddit.com/r/gamernews/top.rss?t=today&limit=25",  # r/gamernews
             "https://www.reddit.com/r/technology/top.rss?t=today&limit=25",  # r/technology
         )
 
@@ -235,7 +235,104 @@ class TechNews(commands.Cog):
     async def news_stop(self, ctx):
         self.tech_news.stop()
 
+        
+class ProgrammingNews(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self._channel_id = 950157023125860442
+        self._last_updated_time = read_NewsTime("ProgrammingNews")
+        self.programming_news.start()
+
+    @staticmethod
+    def _get_programmingNews_entries() -> list:
+
+        # RSS feeds
+        urls: tuple = (
+            # "https://www.reddit.com/user/mahrjose/m/tech_news/top/.rss?t=today&limit=25", # TechNews Custom Feed
+            # "https://www.reddit.com/r/gamernews/top.rss?t=today&limit=25",  # r/gamernews
+            "https://www.reddit.com/r/programming/top.rss?t=today&limit=25",  # r/technology
+        )
+
+        # Get full feed data with feedparser
+        feeds: list = [feedparser.parse(url) for url in urls]
+        # Get only the entries of all the feeds combined in a list
+        all_entries: list = [feed.entries for feed in feeds]
+        return all_entries
+
+    @tasks.loop(minutes=10)
+    async def programming_news(self):
+        all_entries: list = ProgrammingNews._get_programmingNews_entries()
+        self._channel = self.bot.get_channel(self._channel_id)
+
+        # Entries of a single RSS feed from the combined list of all rss feed
+        for entries in all_entries:
+            # Specific entry from all the entries
+            for entry in entries:
+
+                # Time when this entry was updated or Posted
+                entry_time = calendar.timegm(entry.published_parsed)
+
+                if entry_time > self._last_updated_time:
+                    self._last_updated_time = entry_time
+                    update_NewsTime("ProgrammingNews", entry_time)
+
+                    summary = html.unescape(entry.summary)
+                    soup = BeautifulSoup(summary, "html.parser")
+                    all_links = soup.findAll("a")
+                    # From all the links present, get the Direct News Link
+                    for link in all_links:
+                        if str(link.string) == "[link]":
+                            news_link = link["href"]
+
+                    image_url = entry.get("media_thumbnail")
+                    reddit_link = entry["links"][0]["href"]
+
+                    message = discord.Embed(
+                        color=discord.Color.orange(),
+                        title=f"📰  {html.unescape(entry.title)}",
+                        url=news_link,
+                    )
+                    message.add_field(
+                        name="\u200B",
+                        value=f"🔗 Disscussion on [Reddit]({reddit_link})",
+                    )
+                    message.set_footer(
+                        text="From Reddit", icon_url="https://i.imgur.com/Oj5KugT.png"
+                    )
+                    if image_url is not None:
+                        message.set_image(url=image_url[0]["url"])
+                    else:
+                        image_url = scrape_metaImage(news_link)
+                        if image_url is not None:
+                            message.set_image(url=image_url)
+                        else:
+                            continue
+
+                    await self._channel.send(embed=message)
+
+    # This will exec before starting the tech_news() func
+    @programming_news.before_loop
+    async def before_programming_news(self):
+        print("Starting Programming News...")
+        await self.bot.wait_until_ready()
+
+    # Command for setting the channel for messages to send
+    @commands.command(name="set-programmingnews-channel", hidden=True)
+    @commands.is_owner()
+    async def set_programmingnews_channel(self, ctx, *, channel_id):
+        self._channel_id = int(channel_id)
+
+    @commands.command(name="programmingnews-start", hidden=True)
+    @commands.is_owner()
+    async def news_start(self, ctx):
+        self.programming_news.start()
+
+    @commands.command(name="prorammingnews-stop", hidden=True)
+    @commands.is_owner()
+    async def news_stop(self, ctx):
+        self.programming_news.stop()
 
 def setup(bot):
     bot.add_cog(AnimeNews(bot))
     bot.add_cog(TechNews(bot))
+    bot.add_cog(ProgrammingNews(bot))
